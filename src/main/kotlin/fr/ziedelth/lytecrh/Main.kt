@@ -10,15 +10,15 @@ import net.bramp.ffmpeg.progress.Progress
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+private const val EXTENSION = "mp4"
 private const val CRF = 30.0
 private const val VBR = 4L
 
-private fun toH264(fFmpegProbeResult: FFmpegProbeResult): FFmpegBuilder {
+private fun toH264_OLD(fFmpegProbeResult: FFmpegProbeResult): FFmpegBuilder {
     return FFmpegBuilder()
         .setInput(fFmpegProbeResult)
         .overrideOutputFiles(true)
-        .addOutput("output.mp4")
-        .setFormat("mp4")
+        .addOutput("output.$EXTENSION")
         .setVideoCodec("libx264")
         .setConstantRateFactor(CRF)
         .setVideoPixelFormat("yuv420p")
@@ -29,13 +29,32 @@ private fun toH264(fFmpegProbeResult: FFmpegProbeResult): FFmpegBuilder {
         .done()
 }
 
+private fun toH264(fFmpegProbeResult: FFmpegProbeResult): FFmpegBuilder {
+    return FFmpegBuilder()
+        .setInput(fFmpegProbeResult)
+        .overrideOutputFiles(true)
+        .addOutput("output.$EXTENSION")
+        .setVideoCodec("libx264")
+        .setVideoFilter("scale=-1:720")
+        .done()
+}
+
+private fun toH265(fFmpegProbeResult: FFmpegProbeResult): FFmpegBuilder {
+    return FFmpegBuilder()
+        .setInput(fFmpegProbeResult)
+        .overrideOutputFiles(true)
+        .addOutput("output.$EXTENSION")
+        .setVideoCodec("libx265")
+        .setVideoFilter("scale=-1:720")
+        .done()
+}
+
 private fun Double.toSign(): String = if (this > 0) String.format("-%.2f", this) else String.format("+%.2f", abs(this))
 
-fun main() {
-    val fFmpeg = FFmpeg()
-    val fFprobe = FFprobe()
-    val fFmpegProbeResult = fFprobe.probe("input.mp4")
-    val fFmpegBuilder = toH264(fFmpegProbeResult)
+private val fFmpeg = FFmpeg()
+private val fFprobe = FFprobe()
+
+private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpegBuilder) {
     val fileDurationNs = fFmpegProbeResult.format.duration * TimeUnit.SECONDS.toNanos(1)
     println(fFmpegBuilder.build().joinToString(" "))
     val fFmpegExecutor = FFmpegExecutor(fFmpeg, fFprobe)
@@ -87,4 +106,15 @@ fun main() {
             println("Total taken time: ${String.format("%.2f", (System.currentTimeMillis() - start) / 60000.0)} min")
         }
     }.run()
+}
+
+fun main() {
+    val fFmpegProbeResult = fFprobe.probe("input.$EXTENSION")
+
+    println("H264 OLD")
+    compress(fFmpegProbeResult, toH264_OLD(fFmpegProbeResult))
+    println("H264")
+    compress(fFmpegProbeResult, toH264(fFmpegProbeResult))
+    println("H265")
+    compress(fFmpegProbeResult, toH265(fFmpegProbeResult))
 }
