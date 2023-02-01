@@ -1,7 +1,9 @@
 package fr.ziedelth.lytecrh
 
+import fr.ziedelth.lytecrh.encoders.AV1Encoder
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.EXTENSION
 import fr.ziedelth.lytecrh.encoders.H264Encoder
+import fr.ziedelth.lytecrh.encoders.H265Encoder
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFmpegUtils
@@ -92,9 +94,13 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
 }
 
 fun main() {
-    val hardware = Hardware.INTEL
+    val hardware = Hardware.AMD
     val fFmpegProbeResult = fFprobe.probe("input.$EXTENSION")
 
     println("H264")
     compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware))
+    println("H265")
+    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware))
+    println("AV1")
+    compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
 }

@@ -20,6 +20,16 @@ class H265Encoder : Encoder {
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
 
+            Hardware.AMD -> FFmpegBuilder()
+                .addExtraArgs("-hwaccel", "d3d11va", "-init_hw_device", "d3d11va=hw", "-hwaccel_output_format", "d3d11va")
+                .setInput(fFmpegProbeResult)
+                .overrideOutputFiles(true)
+                .addOutput("output.$EXTENSION")
+                .setVideoCodec("hevc_amf")
+                .setVideoFilter("scale=-1:$RESOLUTION")
+                .setAudioCodec(AUDIO_CODEC)
+                .done()
+
             else -> FFmpegBuilder()
                 .setInput(fFmpegProbeResult)
                 .overrideOutputFiles(true)
