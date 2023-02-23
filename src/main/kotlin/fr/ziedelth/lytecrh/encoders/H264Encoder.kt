@@ -10,6 +10,16 @@ import net.bramp.ffmpeg.probe.FFmpegProbeResult
 class H264Encoder : Encoder {
     override fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware): FFmpegBuilder {
         return when (hardware) {
+            Hardware.ARM -> FFmpegBuilder()
+                .addExtraArgs("-hwaccel", "drm", "-init_hw_device", "drm=hw", "-hwaccel_output_format", "drm")
+                .setInput(fFmpegProbeResult)
+                .overrideOutputFiles(true)
+                .addOutput("output.$EXTENSION")
+                .setVideoCodec("h264_v4l2m2m")
+                .setVideoFilter("scale=-1:$RESOLUTION")
+                .setAudioCodec(AUDIO_CODEC)
+                .done()
+
             Hardware.INTEL -> FFmpegBuilder()
                 .addExtraArgs("-hwaccel", "qsv", "-init_hw_device", "qsv=hw", "-hwaccel_output_format", "qsv")
                 .setInput(fFmpegProbeResult)
