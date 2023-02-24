@@ -11,5 +11,7 @@ interface Encoder {
         const val EXTENSION = "mp4"
         const val RESOLUTION = 1080
         const val AUDIO_CODEC = "copy"
+        const val PIXEL_FORMAT = "yuv420p"
+        const val CRF = 23.0
     }
 }

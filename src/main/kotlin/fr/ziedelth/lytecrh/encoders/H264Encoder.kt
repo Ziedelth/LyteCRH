@@ -2,7 +2,9 @@ package fr.ziedelth.lytecrh.encoders
 
 import fr.ziedelth.lytecrh.Hardware
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_CODEC
+import fr.ziedelth.lytecrh.encoders.Encoder.Companion.CRF
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.EXTENSION
+import fr.ziedelth.lytecrh.encoders.Encoder.Companion.PIXEL_FORMAT
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.RESOLUTION
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
@@ -10,16 +12,6 @@ import net.bramp.ffmpeg.probe.FFmpegProbeResult
 class H264Encoder : Encoder {
     override fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware): FFmpegBuilder {
         return when (hardware) {
-            Hardware.ARM -> FFmpegBuilder()
-                .addExtraArgs("-hwaccel", "drm", "-init_hw_device", "drm=hw", "-hwaccel_output_format", "drm")
-                .setInput(fFmpegProbeResult)
-                .overrideOutputFiles(true)
-                .addOutput("output.$EXTENSION")
-                .setVideoCodec("h264_v4l2m2m")
-                .setVideoFilter("scale=-1:$RESOLUTION")
-                .setAudioCodec(AUDIO_CODEC)
-                .done()
-
             Hardware.INTEL -> FFmpegBuilder()
                 .addExtraArgs("-hwaccel", "qsv", "-init_hw_device", "qsv=hw", "-hwaccel_output_format", "qsv")
                 .setInput(fFmpegProbeResult)
@@ -27,6 +19,8 @@ class H264Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("h264_qsv")
                 .setVideoFilter("\"scale_qsv=w=-1:h=$RESOLUTION\"")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
 
@@ -37,6 +31,8 @@ class H264Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("h264_amf")
                 .setVideoFilter("scale=-1:$RESOLUTION")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
 
@@ -46,6 +42,8 @@ class H264Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("libx264")
                 .setVideoFilter("scale=-1:$RESOLUTION")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
         }

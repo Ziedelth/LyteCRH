@@ -2,7 +2,9 @@ package fr.ziedelth.lytecrh.encoders
 
 import fr.ziedelth.lytecrh.Hardware
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_CODEC
+import fr.ziedelth.lytecrh.encoders.Encoder.Companion.CRF
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.EXTENSION
+import fr.ziedelth.lytecrh.encoders.Encoder.Companion.PIXEL_FORMAT
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.RESOLUTION
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
@@ -17,6 +19,8 @@ class H265Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("hevc_qsv")
                 .setVideoFilter("\"scale_qsv=w=-1:h=$RESOLUTION\"")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
 
@@ -27,6 +31,8 @@ class H265Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("hevc_amf")
                 .setVideoFilter("scale=-1:$RESOLUTION")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
 
@@ -36,6 +42,8 @@ class H265Encoder : Encoder {
                 .addOutput("output.$EXTENSION")
                 .setVideoCodec("libx265")
                 .setVideoFilter("scale=-1:$RESOLUTION")
+                .setVideoPixelFormat(PIXEL_FORMAT)
+                .setConstantRateFactor(CRF)
                 .setAudioCodec(AUDIO_CODEC)
                 .done()
         }
