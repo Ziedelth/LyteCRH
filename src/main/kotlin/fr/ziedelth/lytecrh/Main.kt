@@ -93,13 +93,13 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
 }
 
 fun main() {
-    val hardware = Hardware.AMD
+    val hardware = Hardware.INTEL
     val fFmpegProbeResult = fFprobe.probe("input.$EXTENSION")
 
     println("H264")
-    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware))
+    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware, "output_h264.$EXTENSION"))
     println("H265")
-    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware))
-//    println("AV1")
-//    compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
+    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware, "output_h265.$EXTENSION"))
+    // println("AV1")
+    // compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
 }
