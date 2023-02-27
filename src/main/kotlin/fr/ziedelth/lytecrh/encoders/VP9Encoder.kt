@@ -8,16 +8,14 @@ import net.bramp.ffmpeg.probe.FFmpegProbeResult
 
 class VP9Encoder : Encoder {
     override fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware, output: String, crf: Double): FFmpegBuilder {
-        return when (hardware) {
-            else -> FFmpegBuilder()
-                .setInput(fFmpegProbeResult)
-                .overrideOutputFiles(true)
-                .addOutput(output)
-                .setVideoCodec("libvpx-vp9")
-                .setConstantRateFactor(crf)
-                .setAudioCodec(AUDIO_CODEC)
-                .setAudioBitRate(AUDIO_BITRATE)
-                .done()
-        }
+        return FFmpegBuilder()
+            .setInput(fFmpegProbeResult)
+            .overrideOutputFiles(true)
+            .addOutput(output)
+            .setVideoCodec("libvpx-vp9")
+            .setConstantRateFactor(crf)
+            .setAudioCodec(AUDIO_CODEC)
+            .setAudioBitRate(AUDIO_BITRATE)
+            .done()
     }
 }

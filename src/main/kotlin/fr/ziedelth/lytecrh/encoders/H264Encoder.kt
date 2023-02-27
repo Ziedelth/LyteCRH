@@ -14,7 +14,27 @@ class H264Encoder : Encoder {
                 .overrideOutputFiles(true)
                 .addOutput(output)
                 .setVideoCodec("h264_amf")
-                .setConstantRateFactor(crf)
+                .addExtraArgs(
+                    "-rc",
+                    "cqp",
+                    "-qp_i",
+                    crf.toInt().toString(),
+                    "-qp_p",
+                    crf.toInt().toString(),
+                    "-qp_b",
+                    crf.toInt().toString()
+                )
+                .setAudioCodec(AUDIO_CODEC)
+                .setAudioBitRate(AUDIO_BITRATE)
+                .done()
+
+            Hardware.INTEL -> FFmpegBuilder()
+                .setInput(fFmpegProbeResult)
+                .overrideOutputFiles(true)
+                .addOutput(output)
+                .setVideoCodec("h264_qsv")
+                .addExtraArgs("-global_quality", crf.toInt().toString())
+                .addExtraArgs("-look_ahead", "1")
                 .setAudioCodec(AUDIO_CODEC)
                 .setAudioBitRate(AUDIO_BITRATE)
                 .done()

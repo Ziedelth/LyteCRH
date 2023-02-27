@@ -63,7 +63,7 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
             String.format(
                 "%s\t%s\t%.2f%%\t%s\tx%s",
                 FFmpegUtils.toTimecode(progress.out_time_ns, TimeUnit.NANOSECONDS).split(".")[0],
-                "[${"#".repeat((percentage / 2).toInt())}${" ".repeat((50 - percentage / 2).toInt())}]",
+                "[${"#".repeat((percentage * 0.5).toInt())}${" ".repeat((50 - percentage * 0.5).toInt())}]",
                 percentage,
                 FFmpegUtils.toTimecode(remainingTime.toLong(), TimeUnit.MILLISECONDS).split(".")[0],
                 String.format("%.2f", speeds.average())
@@ -93,19 +93,27 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
 
 fun main() {
     val crf = 30
-    val fFmpegProbeResult = fFprobe.probe("input_2.mp4")
+    val fFmpegProbeResult = fFprobe.probe("input.mp4")
 
-    println("H264 - CRF: $crf")
-    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_h264_crf_$crf.mp4", crf.toDouble()))
-    println("H265 - CRF: $crf")
-    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_h265_crf_$crf.mp4", crf.toDouble()))
+    println("H264 CPU - CRF: $crf")
+    compress(
+        fFmpegProbeResult,
+        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_h264_crf_$crf.mp4", crf.toDouble())
+    )
+    println("H264 GPU - CRF: $crf")
+    compress(
+        fFmpegProbeResult,
+        H264Encoder().encode(fFmpegProbeResult, Hardware.INTEL, "output_intel_h264_crf_$crf.mp4", crf.toDouble())
+    )
 
-//    println("H264")
-//    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware, "output_h264.$EXTENSION"))
-//    println("H265")
-//    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware, "output_h265.$EXTENSION"))
-//    println("VP9")
-//    compress(fFmpegProbeResult, VP9Encoder().encode(fFmpegProbeResult, hardware, "output_vp9.$EXTENSION"))
-//     println("AV1")
-//     compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
+    println("H265 CPU - CRF: $crf")
+    compress(
+        fFmpegProbeResult,
+        H265Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_h265_crf_$crf.mp4", crf.toDouble())
+    )
+    println("H265 GPU - CRF: $crf")
+    compress(
+        fFmpegProbeResult,
+        H265Encoder().encode(fFmpegProbeResult, Hardware.INTEL, "output_intel_h265_crf_$crf.mp4", crf.toDouble())
+    )
 }
