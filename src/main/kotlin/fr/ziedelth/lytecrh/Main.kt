@@ -1,6 +1,5 @@
 package fr.ziedelth.lytecrh
 
-import fr.ziedelth.lytecrh.encoders.Encoder.Companion.EXTENSION
 import fr.ziedelth.lytecrh.encoders.H264Encoder
 import fr.ziedelth.lytecrh.encoders.H265Encoder
 import net.bramp.ffmpeg.FFmpeg
@@ -93,13 +92,20 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
 }
 
 fun main() {
-    val hardware = Hardware.INTEL
-    val fFmpegProbeResult = fFprobe.probe("input.$EXTENSION")
+    val crf = 30
+    val fFmpegProbeResult = fFprobe.probe("input_2.mp4")
 
-    println("H264")
-    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware, "output_h264.$EXTENSION"))
-    println("H265")
-    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware, "output_h265.$EXTENSION"))
-    // println("AV1")
-    // compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
+    println("H264 - CRF: $crf")
+    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_h264_crf_$crf.mp4", crf.toDouble()))
+    println("H265 - CRF: $crf")
+    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_h265_crf_$crf.mp4", crf.toDouble()))
+
+//    println("H264")
+//    compress(fFmpegProbeResult, H264Encoder().encode(fFmpegProbeResult, hardware, "output_h264.$EXTENSION"))
+//    println("H265")
+//    compress(fFmpegProbeResult, H265Encoder().encode(fFmpegProbeResult, hardware, "output_h265.$EXTENSION"))
+//    println("VP9")
+//    compress(fFmpegProbeResult, VP9Encoder().encode(fFmpegProbeResult, hardware, "output_vp9.$EXTENSION"))
+//     println("AV1")
+//     compress(fFmpegProbeResult, AV1Encoder().encode(fFmpegProbeResult, hardware))
 }

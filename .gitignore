@@ -1,5 +1,5 @@
 /target/
 /.idea/
-/input.mp4
 /lytecrh.iml
-/output.mp4
+/*.mp4
+/*.mkv
