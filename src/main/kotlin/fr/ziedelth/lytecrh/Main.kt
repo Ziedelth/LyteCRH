@@ -1,5 +1,7 @@
 package fr.ziedelth.lytecrh
 
+import fr.ziedelth.lytecrh.encoders.H264Encoder
+import fr.ziedelth.lytecrh.encoders.H265Encoder
 import fr.ziedelth.lytecrh.encoders.VP9Encoder
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
@@ -24,6 +26,15 @@ private fun Double.toSign(): String = if (this > 0) String.format("-%.2f", this)
 
 private val fFmpeg = FFmpeg()
 private val fFprobe = FFprobe()
+
+fun drawProgressbar(currentTime: String, progress: Double, remainingTime: String, speed: Double, length: Int = 50) {
+    val copyProgressBar = " ".repeat(length).toCharArray()
+    val currentPosition = (copyProgressBar.size * progress).toInt()
+    (0 until currentPosition).forEach { copyProgressBar[it] = '•' }
+    val str = "$currentTime\t|${copyProgressBar.joinToString("")}|\t${String.format("%.2f", progress * 100)}%\t~$remainingTime (${String.format("%.2f", speed)}x)"
+    print("\b".repeat(str.length) + str)
+}
+
 
 private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpegBuilder) {
     println(fFmpegBuilder.build().joinToString(" "))
@@ -65,16 +76,11 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
         val diffSeconds = fFmpegProbeResult.format.duration - progressInSec
         val remainingTime = diffSeconds * times.average()
 
-        print("\b".repeat(1000))
-        print(
-            String.format(
-                "%s\t%s\t%.2f%%\t%s\tx%s",
-                FFmpegUtils.toTimecode(progress.out_time_ns, TimeUnit.NANOSECONDS).split(".")[0],
-                "[${"#".repeat((percentage * 0.5).toInt())}${" ".repeat((50 - percentage * 0.5).toInt())}]",
-                percentage,
-                FFmpegUtils.toTimecode(remainingTime.toLong(), TimeUnit.MILLISECONDS).split(".")[0],
-                String.format("%.2f", speeds.average())
-            )
+        drawProgressbar(
+            FFmpegUtils.toTimecode(progress.out_time_ns, TimeUnit.NANOSECONDS).split(".")[0],
+            percentage / 100.0,
+            FFmpegUtils.toTimecode(remainingTime.toLong(), TimeUnit.MILLISECONDS).split(".")[0],
+            speeds.average(),
         )
 
         if (progress.status == Progress.Status.END) {
@@ -103,15 +109,15 @@ fun main() {
     val crf = 30
     val fFmpegProbeResult = fFprobe.probe("mha.mp4")
 
-//    println("H264 CPU - CRF: $crf")
-//    compress(
-//        fFmpegProbeResult,
-//        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_h264_crf_$crf.mp4", crf.toDouble())
-//    )
+    println("H264 CPU - CRF: $crf")
+    compress(
+        fFmpegProbeResult,
+        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_h264_crf_$crf.mp4", crf.toDouble())
+    )
 //    println("H264 GPU - CRF: $crf")
 //    compress(
 //        fFmpegProbeResult,
-//        H264Encoder().encode(fFmpegProbeResult, Hardware.AMD, "output_amd_h264_crf_$crf.mp4", crf.toDouble())
+//        H264Encoder().encode(fFmpegProbeResult, Hardware.INTEL, "output_h264_crf_$crf.mp4", crf.toDouble())
 //    )
 //
 //    println("H265 CPU - CRF: $crf")
@@ -125,9 +131,9 @@ fun main() {
 //        H265Encoder().encode(fFmpegProbeResult, Hardware.AMD, "output_amd_h265_crf_$crf.mp4", crf.toDouble())
 //    )
 
-    println("VP9 CPU - CRF: $crf")
-    compress(
-        fFmpegProbeResult,
-        VP9Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_vp9_crf_$crf.mp4", crf.toDouble())
-    )
+//    println("VP9 CPU - CRF: $crf")
+//    compress(
+//        fFmpegProbeResult,
+//        VP9Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_vp9_crf_$crf.mp4", crf.toDouble())
+//    )
 }

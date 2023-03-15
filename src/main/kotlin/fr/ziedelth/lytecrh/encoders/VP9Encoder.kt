@@ -1,7 +1,6 @@
 package fr.ziedelth.lytecrh.encoders
 
 import fr.ziedelth.lytecrh.Hardware
-import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_BITRATE
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_CODEC
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
@@ -15,7 +14,7 @@ class VP9Encoder : Encoder {
             .setVideoCodec("libvpx-vp9")
             .setConstantRateFactor(crf)
             .setAudioCodec(AUDIO_CODEC)
-            .setAudioBitRate(AUDIO_BITRATE)
+//            .setAudioBitRate(AUDIO_BITRATE)
             .done()
     }
 }

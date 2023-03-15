@@ -1,7 +1,6 @@
 package fr.ziedelth.lytecrh.encoders
 
 import fr.ziedelth.lytecrh.Hardware
-import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_BITRATE
 import fr.ziedelth.lytecrh.encoders.Encoder.Companion.AUDIO_CODEC
 import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
@@ -17,7 +16,7 @@ class AV1Encoder : Encoder {
                 .setVideoCodec("av1_qsv")
                 .setConstantRateFactor(crf)
                 .setAudioCodec(AUDIO_CODEC)
-                .setAudioBitRate(AUDIO_BITRATE)
+//                .setAudioBitRate(AUDIO_BITRATE)
                 .done()
 
             else -> FFmpegBuilder()
@@ -27,7 +26,7 @@ class AV1Encoder : Encoder {
                 .setVideoCodec("libaom-av1")
                 .setConstantRateFactor(crf)
                 .setAudioCodec(AUDIO_CODEC)
-                .setAudioBitRate(AUDIO_BITRATE)
+//                .setAudioBitRate(AUDIO_BITRATE)
                 .done()
         }
     }
