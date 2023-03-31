@@ -9,6 +9,6 @@ interface Encoder {
 
     companion object {
         const val AUDIO_CODEC = "copy"
-//        const val AUDIO_BITRATE = 128 * 1000L
+        const val AUDIO_BITRATE = 96 * 1000L
     }
 }

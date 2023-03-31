@@ -1,8 +1,7 @@
 package fr.ziedelth.lytecrh
 
 import fr.ziedelth.lytecrh.encoders.H264Encoder
-import fr.ziedelth.lytecrh.encoders.H265Encoder
-import fr.ziedelth.lytecrh.encoders.VP9Encoder
+import fr.ziedelth.lytecrh.encoders.VP8Encoder
 import net.bramp.ffmpeg.FFmpeg
 import net.bramp.ffmpeg.FFmpegExecutor
 import net.bramp.ffmpeg.FFmpegUtils
@@ -11,6 +10,7 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
 import net.bramp.ffmpeg.probe.FFmpegStream
 import net.bramp.ffmpeg.progress.Progress
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -23,6 +23,7 @@ private fun FFmpegProbeResult.getTotalBitrate(): Long {
 }
 
 private fun Double.toSign(): String = if (this > 0) String.format("-%.2f", this) else String.format("+%.2f", abs(this))
+private fun File.calculateFolderSize(): Long = this.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
 
 private val fFmpeg = FFmpeg()
 private val fFprobe = FFprobe()
@@ -35,8 +36,22 @@ fun drawProgressbar(currentTime: String, progress: Double, remainingTime: String
     print("\b".repeat(str.length) + str)
 }
 
+fun Double.toHumanReadable(): String {
+    val toInt = this.toInt()
 
-private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpegBuilder) {
+    return when {
+        toInt < 1024 -> "$toInt B"
+        toInt < 1024 * 1024 -> "${String.format("%.2f", toInt / 1024.0)} KB"
+        toInt < 1024 * 1024 * 1024 -> "${String.format("%.2f", toInt / (1024.0 * 1024.0))} MB"
+        else -> "${String.format("%.2f", toInt / (1024.0 * 1024.0 * 1024.0))} GB"
+    }
+}
+
+fun calculateBandwidth(durationInSeconds: Double, views: Long, bitrateInKbps: Double): Double {
+    return durationInSeconds * views * bitrateInKbps / 8.0
+}
+
+private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpegBuilder, filename: String) {
     println(fFmpegBuilder.build().joinToString(" "))
 
     val fileDurationNs = fFmpegProbeResult.format.duration * TimeUnit.SECONDS.toNanos(1)
@@ -83,25 +98,42 @@ private fun compress(fFmpegProbeResult: FFmpegProbeResult, fFmpegBuilder: FFmpeg
             speeds.average(),
         )
 
-        if (progress.status == Progress.Status.END) {
-            val toDouble = fFmpegProbeResult.format.size.toDouble()
-            val totalSizeDouble = progress.total_size.toDouble()
-            val diff = (toDouble - totalSizeDouble) / toDouble * 100.0
-
-            val originalBitrateToDouble = fFmpegProbeResult.getTotalBitrate().toDouble()
-            val newBitrateToDouble = progress.bitrate.toDouble()
-            val bitrateDiff = (originalBitrateToDouble - newBitrateToDouble) / originalBitrateToDouble * 100.0
-
-            println()
-            println()
-            println("Original size: ${String.format("%.2f", toDouble / (1024 * 1024))} Mb - New size: ${String.format("%.2f", totalSizeDouble / (1024 * 1024))} Mb")
-            println("Compression ratio: ${diff.toSign()}%")
-            println("Original bitrate: ${String.format("%.2f", originalBitrateToDouble * 0.001)} kbps - New bitrate: ${String.format("%.2f", newBitrateToDouble * 0.001)} kbps")
-            println("Bitrate ratio: ${bitrateDiff.toSign()}%")
-            println()
-            println("Total taken time: ${String.format("%.2f", (System.currentTimeMillis() - start) / 60000.0)} min")
-            println()
+        if (progress.status != Progress.Status.END) {
+            return@createJob
         }
+
+        val toDouble = fFmpegProbeResult.format.size.toDouble()
+        val isInsideAFolder = filename.contains("/")
+        val foldername = if (isInsideAFolder) filename.substring(0, filename.lastIndexOf("/")) else ""
+        val totalSizeDouble = if (isInsideAFolder && filename.substringAfterLast(".").lowercase() == "m3u8") File(foldername).calculateFolderSize().toDouble() else progress.total_size.toDouble()
+        val diff = (toDouble - totalSizeDouble) / toDouble * 100.0
+
+        val originalBitrateToDouble = fFmpegProbeResult.getTotalBitrate().toDouble()
+        val newBitrateToDouble = progress.bitrate.toDouble()
+
+        println()
+        println()
+        println("Size: ${toDouble.toHumanReadable()} → ${totalSizeDouble.toHumanReadable()} (${diff.toSign()}%)")
+
+        if (!isInsideAFolder) {
+            val oldBitrateInKbps = originalBitrateToDouble * 0.001
+            val newBitrateInKbps = newBitrateToDouble * 0.001
+            println("Bitrate: ${String.format("%.2f", oldBitrateInKbps)} kbps → ${String.format("%.2f", newBitrateInKbps)} kbps")
+            // For one day, the video is seen 40,000 times
+            // How many bandwidth is needed to stream the video for one day?
+            val oldBandwidth = calculateBandwidth(fFmpegProbeResult.format.duration, 40_000, oldBitrateInKbps) // In kbps
+            val newBandwidth = calculateBandwidth(fFmpegProbeResult.format.duration, 40_000, newBitrateInKbps) // In kbps
+            println("Bandwidth: ${String.format("%.2f", oldBandwidth / (1000 * 1000 * 1000))} To/day → ${String.format("%.2f", newBandwidth / (1000 * 1000 * 1000))} To/day")
+            // 0.02 $/Go
+            val pricePerGo = 0.02
+            val pricePerDay = pricePerGo * 24
+            val oldCost = oldBitrateInKbps / 8.0 / 1024.0 * 3600 * 24 * pricePerGo * pricePerDay
+            val newCost = newBitrateInKbps / 8.0 / 1024.0 * 3600 * 24 * pricePerGo * pricePerDay
+            println("Cost: ${String.format("%.2f", oldCost)} $/day → ${String.format("%.2f", newCost)} $/day")
+        }
+
+        println()
+        println("Total taken time: ${String.format("%.2f", (System.currentTimeMillis() - start) / 60000.0)} min")
     }.run()
 }
 
@@ -109,17 +141,32 @@ fun main() {
     val crf = 30
     val fFmpegProbeResult = fFprobe.probe("mha.mp4")
 
+    val folder = File("output")
+    if (!folder.exists()) folder.mkdirs()
+
     println("H264 CPU - CRF: $crf")
+//    val h264CpuOutput = "${folder.name}/video.m3u8"
+    val h264CpuOutput = "video.mp4"
     compress(
         fFmpegProbeResult,
-        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, "output_cpu_h264_crf_$crf.mp4", crf.toDouble())
+        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, h264CpuOutput, crf.toDouble()),
+        h264CpuOutput,
     )
+
+//    println("VP8 CPU - CRF: $crf")
+//    val vp8CpuOutput = "video.webm"
+//    compress(
+//        fFmpegProbeResult,
+//        VP8Encoder().encode(fFmpegProbeResult, Hardware.CPU, vp8CpuOutput, crf.toDouble()),
+//        vp8CpuOutput,
+//    )
+
 //    println("H264 GPU - CRF: $crf")
 //    compress(
 //        fFmpegProbeResult,
 //        H264Encoder().encode(fFmpegProbeResult, Hardware.INTEL, "output_h264_crf_$crf.mp4", crf.toDouble())
 //    )
-//
+
 //    println("H265 CPU - CRF: $crf")
 //    compress(
 //        fFmpegProbeResult,
