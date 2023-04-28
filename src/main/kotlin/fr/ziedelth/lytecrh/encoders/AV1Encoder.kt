@@ -6,7 +6,12 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
 
 class AV1Encoder : Encoder {
-    override fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware, output: String, crf: Double): FFmpegBuilder {
+    override fun encode(
+        fFmpegProbeResult: FFmpegProbeResult,
+        hardware: Hardware,
+        output: String,
+        crf: Double
+    ): FFmpegBuilder {
         return when (hardware) {
             Hardware.INTEL -> FFmpegBuilder()
                 .addExtraArgs("-hwaccel", "qsv", "-init_hw_device", "qsv=hw", "-hwaccel_output_format", "qsv")

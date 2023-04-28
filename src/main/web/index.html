@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur vidéo personnalisé</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+    <div class="video-container">
+        <video class="video" controlsList="nodownload"></video>
+
+        <div class="indicator">
+            <div class="progress-container">
+                <progress class="progress-slider" max="100" value="0"></progress>
+            </div>
+
+            <div class="controls">
+                <button title="Play / Pause" type="button" class="play-pause"><i class="fas fa-play"></i></button>
+
+                <div class="volume-controls">
+                    <i id="volume-icon" class="fas fa-volume-up"></i>
+                    <progress class="volume-slider hidden" max="100" value="100"></progress>
+                </div>
+
+                <div class="time">
+                    <span class="duration">00:00 / 00:00</span>
+                </div>
+
+                <div class="right">
+                    <button title="Cast" type="button" class="cast"><i class="fa-brands fa-chromecast"></i></button>
+                    <button title="Fullscreen" type="button" class="fullscreen"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="scripts/cast.js"></script>
+<script src="scripts/script.js"></script>
+</body>
+</html>

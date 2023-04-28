@@ -6,7 +6,12 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
 
 class VP9Encoder : Encoder {
-    override fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware, output: String, crf: Double): FFmpegBuilder {
+    override fun encode(
+        fFmpegProbeResult: FFmpegProbeResult,
+        hardware: Hardware,
+        output: String,
+        crf: Double
+    ): FFmpegBuilder {
         return FFmpegBuilder()
             .setInput(fFmpegProbeResult)
             .overrideOutputFiles(true)

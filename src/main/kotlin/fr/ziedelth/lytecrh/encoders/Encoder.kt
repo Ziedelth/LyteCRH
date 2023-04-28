@@ -5,7 +5,12 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder
 import net.bramp.ffmpeg.probe.FFmpegProbeResult
 
 interface Encoder {
-    fun encode(fFmpegProbeResult: FFmpegProbeResult, hardware: Hardware = Hardware.CPU, output: String, crf: Double = 23.0): FFmpegBuilder
+    fun encode(
+        fFmpegProbeResult: FFmpegProbeResult,
+        hardware: Hardware = Hardware.CPU,
+        output: String,
+        crf: Double = 23.0
+    ): FFmpegBuilder
 
     companion object {
         const val AUDIO_CODEC = "copy"
