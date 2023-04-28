@@ -1,4 +1,4 @@
-# docker run -it  --mount type=bind,source="$(pwd)",target=/crunchy-cli/data --rm --name lytecrh lytecrh:latest --credentials "username:password]" download -o input.mp4 -a ja-JP -s fr-FR https://www.crunchyroll.com/fr/watch/GVWU04XQW/eyes-of-science
+# docker run -it  --mount type=bind,source="$(pwd)",target=/crunchy-cli/data --rm --name lytecrh lytecrh:latest --credentials "username:password" download -o input.mp4 -a ja-JP -s fr-FR https://www.crunchyroll.com/fr/watch/GVWU04XQW/eyes-of-science
 
 FROM rust as rust
 
