@@ -123,14 +123,13 @@ object VideoUtil {
                             )
                         } To/day → ${String.format("%.2f", newBandwidth / (1000 * 1000 * 1000))} To/day"
                     )
-                }
 
-                // 0.02 $/Go
-                val pricePerGo = 0.02
-                val pricePerDay = pricePerGo * 24
-                val oldCost = oldBitrateInKbps / 8.0 / 1024.0 * 3600 * 24 * pricePerGo * pricePerDay
-                val newCost = newBitrateInKbps / 8.0 / 1024.0 * 3600 * 24 * pricePerGo * pricePerDay
-                println("Cost: ${String.format("%.2f", oldCost)} $/day → ${String.format("%.2f", newCost)} $/day")
+                    // 0.02 $/Go
+                    val pricePerGo = 0.02
+                    val oldCost = oldBandwidth / (1000 * 1000) * pricePerGo
+                    val newCost = newBandwidth / (1000 * 1000) * pricePerGo
+                    println("Cost: ${String.format("%.2f", oldCost)} $/day → ${String.format("%.2f", newCost)} $/day")
+                }
             }
 
             println()

@@ -36,7 +36,7 @@ fun main() {
         fFmpeg,
         fFprobe,
         fFmpegProbeResult,
-        H264Encoder().encode(fFmpegProbeResult, Hardware.CPU, h264CpuOutput, crf.toDouble()),
+        H264Encoder().encode(fFmpegProbeResult, Hardware.AMD, h264CpuOutput, crf.toDouble()),
         h264CpuOutput,
         7_000,
     )

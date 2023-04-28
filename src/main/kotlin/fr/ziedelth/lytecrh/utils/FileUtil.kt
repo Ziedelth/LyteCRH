@@ -7,12 +7,12 @@ fun Double.toSign(): String = if (this > 0) String.format("-%.2f", this) else St
 fun File.calculateFolderSize(): Long = this.walkTopDown().filter { it.isFile }.map { it.length() }.sum()
 
 fun Double.toHumanReadable(): String {
-    val toInt = this.toInt()
+    val toLong = this.toLong()
 
     return when {
-        toInt < 1024 -> "$toInt B"
-        toInt < 1024 * 1024 -> "${String.format("%.2f", toInt / 1024.0)} KB"
-        toInt < 1024 * 1024 * 1024 -> "${String.format("%.2f", toInt / (1024.0 * 1024.0))} MB"
-        else -> "${String.format("%.2f", toInt / (1024.0 * 1024.0 * 1024.0))} GB"
+        toLong < 1024 -> "$toLong B"
+        toLong < 1024 * 1024 -> "${String.format("%.2f", toLong / 1024.0)} KB"
+        toLong < 1024 * 1024 * 1024 -> "${String.format("%.2f", toLong / (1024.0 * 1024.0))} MB"
+        else -> "${String.format("%.2f", toLong / (1024.0 * 1024.0 * 1024.0))} GB"
     }
 }

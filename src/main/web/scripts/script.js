@@ -7,6 +7,11 @@ const volumeIcon = document.querySelector('#volume-icon');
 const volumeSlider = document.querySelector('.volume-slider');
 const durationText = document.querySelector('.duration');
 const fullscreen = document.querySelector('.fullscreen');
+const castElement = document.querySelector('#caster');
+
+const cjs = new Castjs();
+let castAvailable = false;
+let isCasting = false;
 
 let mouseTimeout;
 
@@ -18,20 +23,37 @@ let isVolumeDragging = false;
 const pathToVideo = 'mha/video.m3u8';
 
 function changeTextTime() {
-    let minutes, seconds;
+    if (isCasting) {
+        let minutes, seconds;
 
-    if (!isPositionDragging) {
-        minutes = Math.floor(video.currentTime / 60);
-        seconds = Math.floor(video.currentTime % 60);
+        if (!isPositionDragging) {
+            minutes = Math.floor(cjs.time / 60);
+            seconds = Math.floor(cjs.time % 60);
+        } else {
+            minutes = Math.floor(dragPosition * cjs.time / 60);
+            seconds = Math.floor(dragPosition * cjs.time % 60);
+        }
+
+        const durationMinutes = Math.floor(cjs.duration / 60);
+        const durationSeconds = Math.floor(cjs.duration % 60);
+
+        durationText.innerHTML = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds} / ${durationMinutes < 10 ? '0' + durationMinutes : durationMinutes}:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
     } else {
-        minutes = Math.floor(dragPosition * video.duration / 60);
-        seconds = Math.floor(dragPosition * video.duration % 60);
+        let minutes, seconds;
+
+        if (!isPositionDragging) {
+            minutes = Math.floor(video.currentTime / 60);
+            seconds = Math.floor(video.currentTime % 60);
+        } else {
+            minutes = Math.floor(dragPosition * video.duration / 60);
+            seconds = Math.floor(dragPosition * video.duration % 60);
+        }
+
+        const durationMinutes = Math.floor(video.duration / 60);
+        const durationSeconds = Math.floor(video.duration % 60);
+
+        durationText.innerHTML = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds} / ${durationMinutes < 10 ? '0' + durationMinutes : durationMinutes}:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
     }
-
-    const durationMinutes = Math.floor(video.duration / 60);
-    const durationSeconds = Math.floor(video.duration % 60);
-
-    durationText.innerHTML = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds} / ${durationMinutes < 10 ? '0' + durationMinutes : durationMinutes}:${durationSeconds < 10 ? '0' + durationSeconds : durationSeconds}`;
 }
 
 function updatePlayPauseButton() {
@@ -43,10 +65,18 @@ function updatePlayPauseButton() {
 }
 
 function toggleVideo() {
-    if (video.paused) {
-        video.play();
+    if (isCasting) {
+        if (cjs.paused) {
+            cjs.play();
+        } else {
+            cjs.pause();
+        }
     } else {
-        video.pause();
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
     }
 
     updatePlayPauseButton();
@@ -206,3 +236,37 @@ fullscreen.addEventListener('click', () => {
         }
     }
 });
+
+cjs.on('available', function () {
+    console.log('Cast is available');
+    castAvailable = true;
+    castElement.classList.remove('hidden');
+});
+
+cjs.on('connect', function () {
+    console.log('Connected to cast session');
+    castElement.children[0].classList.add('main-color');
+    isCasting = true;
+});
+
+cjs.on('disconnect', function () {
+    console.log('Disconnected from cast session');
+    castElement.children[0].classList.remove('main-color');
+    isCasting = false;
+});
+
+cjs.on('timeupdate', function () {
+    progressSlider.value = cjs.progress
+    changeTextTime();
+});
+
+castElement.addEventListener('click', function () {
+    if (castAvailable) {
+        if (isCasting) {
+            cjs.disconnect();
+        } else {
+            cjs.cast("https://media.w3.org/2010/05/sintel/trailer.mp4")
+        }
+    }
+});
+
